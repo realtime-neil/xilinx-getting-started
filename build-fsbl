@@ -1,0 +1,149 @@
+#!/bin/sh
+
+# xilinx-getting-started/build-fsbl
+
+set -euvx
+
+readonly this="$(readlink -f "$0")"
+readonly here="$(dirname "${this}")"
+readonly whatami="$(basename "${here}").$(basename "${this}")"
+readonly tmpdir="$(mkdir -p "${HOME}/tmp" && mktemp -d "${HOME}/tmp/${whatami}.XXXXXX")"
+
+log() { echo "${whatami}[$$]: $@" >&2; }
+error() { log "ERROR: $@"; }
+warning() { log "WARNING: $@"; }
+info() { log "INFO: $@"; }
+
+die() {
+    error "$@"
+    usage >&2
+    exit 1
+}
+
+cleanup() {
+    status="$?"
+    rm -rf "${tmpdir}"
+    if command -v docker >/dev/null 2>&1; then
+        docker system prune --force --filter until=6h >&2 || true
+    fi
+    return "${status}"
+}
+
+usage() {
+    cat <<EOF
+Usage: $0 [OPTION] HDF_FILE
+Build the First Stage Boot Loader from the given HDF file.
+
+Options:
+
+    -h            print usage and exit
+    -C WORKDIR    generate artifacts in WORKDIR (default: \$PWD/fsbl)
+
+Examples:
+
+    \$ $0 -h
+
+    \$ $0 ~/Downloads/zynq_linux.hdf
+
+    \$ $0 -C \$(mktemp -dt fsbl.XXXXXX) ~/Downloads/zynq_linux.hdf
+
+EOF
+}
+
+# vet given (possibly relative) path hdf_file; for good vetting, print
+# resulting full path and return success; otherwise, print nothing and return
+# failure
+vet_hdf_file() {
+    local result=""
+    if ! result="$(readlink -f "$1")"; then
+        error "bad path: $1"
+        return 1
+    fi
+    if ! [ -f "${result}" ]; then
+        error "bad file: ${result}"
+        return 1
+    fi
+    local regex='^[[:alnum:]._-]+[.][Hh][Dd][Ff]$'
+    if ! basename "${result}" | grep -Eq "${regex}"; then
+        error "bad file name: ${result}"
+        return 1
+    fi
+    if ! file -b "${result}" | grep -q '^Zip archive data'; then
+        error "bad file type: $(file "${result}")"
+        return 1
+    fi
+    echo "${result}"
+    return 0
+}
+
+################################################################################
+
+trap cleanup EXIT
+export TMPDIR="${tmpdir}"
+export LC_ALL=C
+
+while getopts ":hC:" opt; do
+    case "${opt}" in
+        h)
+            usage
+            exit 0
+            ;;
+        C)
+            if ! workdir="$(readlink -f "${OPTARG}")"; then
+                die "missing path: ${OPTARG}"
+            fi
+            if ! [ -d "${workdir}" ]; then
+                die "not a directory: ${workdir}"
+            fi
+            readonly workdir="${workdir}"
+            ;;
+        :) die "missing argument: -${OPTARG}" ;;
+        \?) die "bad option: -${OPTARG}" ;;
+    esac
+done
+shift "$((${OPTIND} - 1))"
+
+# hdf_file
+if ! [ 1 -eq "$#" ]; then
+    die "bad args"
+fi
+if ! hdf_file="$(vet_hdf_file "$1")"; then
+    die "FAILURE: vet_hdf_file $1"
+fi
+readonly hdf_file="${hdf_file}"
+
+# workdir
+if [ -n "${workdir:-}" ]; then
+    info "workdir: ${workdir}"
+else
+    readonly workdir="${PWD}/fsbl"
+    mkdir -vp "${workdir}"
+    warning "defaulting workdir: ${workdir}"
+fi
+
+if ! command -v hsi >/dev/null 2>&1; then
+    die "missing program: hsi"
+fi
+
+# > ERROR: [Common 17-70] Application Exception: Not found in path: gmake
+#
+# -- stupid hsi, when it can't find gmake
+if ! command -v gmake >/dev/null 2>&1; then
+    warning "missing program: gmake"
+    if ! command -v make >/dev/null 2>&1; then
+        die "missing program: make"
+    fi
+    fake_bin="$(mktemp -dt fake_bin.XXXXXX)"
+    (
+        cd "${fake_bin}"
+        ln -vnsrf "$(command -v make)" gmake
+    )
+    export PATH="${fake_bin}:${PATH}"
+fi
+
+hsi <<EOF
+set hwdsgn [ open_hw_design ${hdf_file} ]
+generate_app -hw \$hwdsgn -os standalone -proc ps7_cortexa9_0 -app zynq_fsbl -compile -sw fsbl -dir ${workdir}
+EOF
+
+exit "$?"
