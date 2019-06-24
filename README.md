@@ -80,8 +80,8 @@ This one is easy:
 
 Like the previous step, it builds a bunch of new files that the Xilinx
 documentation only vaguely references. Building `dtc` apparently creates a
-bunch of tools we're going to need later --- the Xilinx tutorial wants you
-bring the `dtc` diretory into your `PATH` like so:
+bunch of tools in there we're going to need later --- the Xilinx tutorial wants
+you bring the `dtc` directory into your `PATH` like so:
 
     $ export PATH="${PWD}/dtc:${PATH}"
 
@@ -98,8 +98,8 @@ https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/18842305/Build+ARM+Trusted
 
 > This page describes how to download and build the ARM Trusted Firmware (ATF)
 > from the Xilinx Git repository. ATF is a mandatory part of the Xilinx
-> software stack for Zynq UltraScale+ MPSoC. *_It is not used for Zynq-7000 or
-> MicroBlaze systems_*.
+> software stack for Zynq UltraScale+ MPSoC. **It is not used for Zynq-7000 or
+> MicroBlaze systems**.
 
 Emphasis mine. Cool, I don't have to do this part, either.
 
