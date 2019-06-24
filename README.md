@@ -1,13 +1,24 @@
 xilinx-getting-started
 ======================
 
-This is what we're following: https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/18841738/Getting%2BStarted
+This is the tutorial we're following...
 
-This document references the Xilinx SDK version 2018.3 but will probably work
-with other, later versions.
+https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/18841738/Getting%2BStarted
 
-This document assumes the current working directory is the non-bare git
-repository into which you've cloned out this project.
+...specifically the section entitled "Building Linux Yourself (DIY)"
+
+This document makes the following assumptions:
+
+* You have cloned out (and/or checked out) the git repository containing the
+  file you are currently reading.
+
+* The current working directory is the non-bare git repository containing the
+  aforementioned clone (and/or checkout).
+
+* You have installed Xilinx SDK version 2018.3 (other, later versions are
+  probably fine).
+
+* You want to make software for for the ZYNQ-7000 SoC ZC706 Evaluation Kit.
 
 # Fetch Sources
 
@@ -17,17 +28,18 @@ The required sources are available as submodules in this repository. Cloning
 out this repository implies that you have fetched all required sources. They
 are repeated for convenience as follows:
 
-> The following table gives an overview of the relevant repositories:
-> Repository Name
-> 	Content
 > https://github.com/Xilinx/linux-xlnx.git
 > 	The Linux kernel with Xilinx patches and drivers
+>
 > https://github.com/Xilinx/u-boot-xlnx.git
 > 	The u-boot bootloader with Xilinx patches and drivers
+>
 > https://github.com/Xilinx/device-tree-xlnx.git
 > 	Device Tree generator plugin for xsdk
+>
 > https://git.kernel.org/pub/scm/utils/dtc/dtc.git
 > 	Device Tree compiler (required to build U-Boot)
+>
 > https://github.com/Xilinx/arm-trusted-firmware.git
 > 	ARM Trusted Firmware (required for Zynq UltraScale+ MPSoC
 
