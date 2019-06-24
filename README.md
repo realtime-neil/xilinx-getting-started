@@ -98,8 +98,8 @@ https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/18842305/Build+ARM+Trusted
 
 > This page describes how to download and build the ARM Trusted Firmware (ATF)
 > from the Xilinx Git repository. ATF is a mandatory part of the Xilinx
-> software stack for Zynq UltraScale+ MPSoC. **It is not used for Zynq-7000 or
-> MicroBlaze systems**.
+> software stack for Zynq UltraScale+ MPSoC. **_It is not used for Zynq-7000 or
+> MicroBlaze systems_**.
 
 Emphasis mine. Cool, I don't have to do this part, either.
 
