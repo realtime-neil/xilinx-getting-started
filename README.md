@@ -103,10 +103,30 @@ https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/18842305/Build+ARM+Trusted
 
 Emphasis mine. Cool, I don't have to do this part, either.
 
+# Build U-Boot
 
+https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/18841973/Build+U-Boot
 
+> All commands have to be executed in your u-boot source directory.
 
+They don't. Things work fine as long as you tell `make` where to start
+building.
 
+What you **_do_** need, what Xilinx assumes, what Xilinx doesn't mention, is
+that you need to source a very particular file before you can build anything:
+
+    $ . ${XILINX_SDK}/.settings64-XSDK_Core_Tools.sh
+    
+Sourcing this file just adds a bunch of cross-toolchain `bin` directories to
+your `PATH`. Doing this makes _many_ cross-toolchain binaries available to
+you. The subsequent `export` invocations recommended by Xilinx are probably
+only there to select which cross toolchan should be used from the multitude.
+
+    $ export CROSS_COMPILE='arm-linux-gnueabihf-'
+    $ export ARCH='arm'
+    $ make -C u-boot-xlnx distclean
+    $ make -C u-boot-xlnx zynq_zc706_defconfig
+    $ make -C u-boot-xlnx
 
 
 [zc706]:https://www.xilinx.com/products/boards-and-kits/ek-z7-zc706-g.html
